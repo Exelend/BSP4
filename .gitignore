@@ -1,0 +1,28 @@
+###
+### .gitignore for BS
+### =================
+###
+### v1.00  WS17/18  by Martin Witte
+###
+
+
+# untrack every file
+#===================
+*
+
+# except / tracked files: -> !...
+#================================
+!.gitignore
+!**/readme.md
+!**/ReadMe.txt
+!**/*.c
+!**/*.h
+!**/*.tex
+!**/*.pdf
+!**/*.vpp
+!**/*.png
+!make
+
+# Reallow files from subdirectories
+#==================================
+!*/

@@ -1,0 +1,125 @@
+% !TeX document-id = {e8a7e607-95aa-4aa4-a520-082b73312f40}
+% !TeX spellcheck = de_DE
+% !TeX TXS-program:compile = txs:///pdflatex/[--shell-escape]
+
+%----------------------------------------------------------------------------------------
+%       PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+\documentclass[paper=a4, fontsize=12pt]{article}
+\usepackage[german]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm,mathtools} % Math packages
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{lipsum} % Package to generate dummy text throughout this template
+\usepackage{blindtext}
+\usepackage{graphicx} 
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+\usepackage[hmarginratio=1:1,top=32mm,left=2cm,right=1cm ,columnsep=20pt]{geometry} % Document margins
+%\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage[hidelinks]{hyperref} % For hyperlinks in the PDF
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
+\usepackage{titlesec} % Allows customization of titles
+\setlength{\parindent}{0pt}
+
+\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
+
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+
+\fancyhead[C]{Hamburg University of Applied Sciences $\,\bullet\,$ BTI4-RNP/02} % Custom header text
+
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+
+
+%----------------------------------------------------------------------------------------
+%       SYNTAX HIGHLIGHTING
+%
+% Show available Languages: pygmentize -L
+%----------------------------------------------------------------------------------------
+\usepackage{minted}
+
+\newminted{java}{autogobble, tabsize = 2, frame=single, breaklines, fontfamily=courier, fontsize=\footnotesize}
+\newmintinline{java}{autogobble, fontfamily=courier, style=bw}
+
+\newminted{c}{autogobble, tabsize = 2, frame=single, breaklines, fontfamily=courier, fontsize=\footnotesize}
+\newmintinline{c}{autogobble, fontfamily=courier, style=bw}
+
+\newminted{cpp}{autogobble, tabsize = 2, frame=single, breaklines, fontfamily=courier, fontsize=\footnotesize}
+\newmintinline{cpp}{autogobble, fontfamily=courier, style=bw}
+
+\newminted{php}{autogobble, tabsize = 2, frame=single, breaklines, fontfamily=courier, fontsize=\footnotesize}
+\newmintinline{php}{autogobble, fontfamily=courier, style=bw}
+
+\newminted{text}{autogobble,tabsize = 2, frame=single, breaklines, fontfamily=courier, fontsize=\footnotesize}
+\newmintinline{text}{fontfamily=courier, style=bw}
+
+\newminted{bash}{autogobble, tabsize = 2, frame=single, breaklines, fontfamily=courier, fontsize=\footnotesize}
+\newmintinline{bash}{autogobble, fontfamily=courier, style=bw}
+
+\newminted{matlab}{autogobble, tabsize = 2, frame=single, breaklines, fontfamily=courier, fontsize=\footnotesize}
+\newmintinline{matlab}{autogobble, fontfamily=courier, style=bw}
+
+%----------------------------------------------------------------------------------------
+%       TITLE SECTION
+%----------------------------------------------------------------------------------------
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{Entwurfsdokument}} % Article title
+\author{
+    \large
+    {\textsc{Praktikum 4 Kernelmodule}}\\[2mm]
+    {\textsc{Hauke Goldhammer (2286057)}}\\[2mm]
+    {\textsc{Martin Witte (2285586)}}\\[2mm]
+    %\thanks{A thank you or further information}\\ % Your name
+    %\normalsize \href..@gmail.com}{...@.. .com}\\[2mm] % Your email address
+}
+\date{Freitag, 15 Dezember 17} % Uncomment to remove date
+
+%----------------------------------------------------------------------------------------
+\begin{document}
+\maketitle % Insert title
+\thispagestyle{fancy} % All pages have headers and footers
+
+\section{Aufgabenstellung:}
+- Erstellen eines Gerätetreibers\\
+- Device-Node: /dev/tzm/\\
+- 
+
+
+
+\section{Weitere Anforderungen und Lösungsansätze:}
+
+\subsection{Funktionen:}
+- Anzahl der Zeichen (sumSigns) in einer Zeile bestimmen (-> \textbackslash n)\\
+- Zeit zwischen zwei Zeilenumbrüchen (timeLine) bestimmen (mit Linux Jiffies Timer)\\
+- Ausgabe der sumSigns und timeLine 
+
+\subsection{User-Befehle:}
+\begin{tabular}{| l | l |}
+\hline
+write() & \\
+\hline
+read() & \\
+\hline
+\end{tabular}
+
+
+
+
+\section{Angestrebte Programmstruktur:}
+%\includegraphics[width=0.9\textwidth]{Entwurf v1-0.png}
+
+\end{document}
