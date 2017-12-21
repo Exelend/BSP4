@@ -16,7 +16,14 @@
 #include <stdio.h>
 
 
-int main( int argc, const char* argv[]){
-	printf("Test, Test !!!");
+int test( void ){
+	printk(KERN_INFO "Test, Test !!!");
 	return 0;
 }
+
+void exit( void ){
+
+}
+
+module_init(test);
+module_exit(exit);

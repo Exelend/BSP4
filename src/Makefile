@@ -1,35 +1,18 @@
-DEBFLAGS = -O2
+obj-m+=tzm.o
 
-EXTRA_CFLAGS = $(DEBFLAGS)
-EXTRA_CFLAGS += -I$(LDDINC)
+KVERSION := $(shell uname -r)
+KDIR := /lib/modules/$(KVERSION)/build
+PWD := "$$(pwd)"
 
-ifneq ($(KERNELRELEASE),)
-# call from kernel build system
+CFLAGS_$(obj-m) := -DDEBUG -g3
 
-scull-objs := main.o 
-#pipe.o
-
-#obj-m	:= scull.o
-
-else
-
-KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-PWD       := $(shell pwd)
-
-modules:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) LDDINC=$(PWD)/../include modules
-
-endif
-
-
-
+all:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
 clean:
-	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
 
-depend .depend dep:
-	$(CC) $(CFLAGS) -M *.c > .depend
+insmod:
+	insmod tzm.ko
+rmmod:
+	rmmod tzm
 
-
-ifeq (.depend,$(wildcard .depend))
-include .depend
-endif
