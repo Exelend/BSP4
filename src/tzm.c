@@ -26,22 +26,23 @@ static struct file_operations fops =
    //.release = dev_release,
 };
 
-int tzm_test( void ){
+int tzm_inital( void ){
     // Dynamische major number vom Kernel holen.
     majorNumber = register_chrdev(0, DEVICE_NAME, &fops);
     if (majorNumber<0){
         printk(KERN_ALERT "Failed to register a major number\n");
         return majorNumber;
     }
-	printk(KERN_INFO "Module loaded.\n");
+	printk(KERN_INFO "tzm Module loaded.\n");
 	return EXIT_SUCCESS;
 }
 
 void tzm_exit( void ){
-    printk(KERN_INFO "Module unloaded.\n");
+    printk(KERN_INFO "tzm Module unloaded.\n");
 }
 
 void tzm_write(void){
+    printk(KERN_INFO "tzm is running.\n");
     
 }
 
@@ -49,5 +50,5 @@ void tzm_read(void ){
     
 }    
 
-module_init(tzm_test);
+module_init(tzm_initial);
 module_exit(tzm_exit);
