@@ -14,6 +14,11 @@
 #include <linux/errno.h>	/* error codes */
 #include <linux/types.h>	/* size_t */
 
+#include <linux/jiffies.h>  // for Timer-Ticks
+
+static u64 last_newLine = 0;
+static u64 last_duration = 0;
+static int counter = 0;
 
 /**
  * callback Funktionen zuweisen
@@ -33,21 +38,31 @@ int tzm_inital( void ){
         printk(KERN_ALERT "Failed to register a major number\n");
         return majorNumber;
     }
-	printk(KERN_INFO "tzm Module loaded.\n");
-	return EXIT_SUCCESS;
+    printk(KERN_INFO "tzm Module loaded.\n");
+    last_newLine = get_jiffes_64();
+    return EXIT_SUCCESS;
 }
 
 void tzm_exit( void ){
     printk(KERN_INFO "tzm Module unloaded.\n");
 }
 
-void tzm_write(void){
-    printk(KERN_INFO "tzm is running.\n");
-    
+ssize_t tzm_write(struct file *filp, const char __user *buf, size_t bufSize, loff_t *f_pos){
+    counter = 0;
+    for(int i = 0 ; i < bufSize; i++){
+        counter++;
+        if(buf[i] == '\n'){
+            last_duration = get_jiffes_64() - last_newLine;
+            return counter;
+        }    
+    }
+    return -1;
 }
 
-void tzm_read(void ){
+ssize_t tzm_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos ){
     
+    
+    return counter;
 }    
 
 module_init(tzm_initial);
