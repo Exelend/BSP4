@@ -53,6 +53,7 @@ ssize_t tzm_write(struct file *filp, const char __user *buf, size_t bufSize, lof
         counter++;
         if(buf[i] == '\n'){
             last_duration = get_jiffes_64() - last_newLine;
+            printk(KERN_INFO "Ticks: %d \nSigns: %d\n", last_duration, counter); // Evtl Fehlerquelle!!!!!!! (Formatierung)
             return counter;
         }    
     }
@@ -60,8 +61,7 @@ ssize_t tzm_write(struct file *filp, const char __user *buf, size_t bufSize, lof
 }
 
 ssize_t tzm_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos ){
-    
-    
+    printk(KERN_INFO "Ticks: %d \nSigns: %d\n", last_duration, counter); // Evtl Fehlerquelle!!!!!!! (Formatierung)
     return counter;
 }    
 
