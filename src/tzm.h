@@ -8,6 +8,7 @@
 
 #define TZM_H_
 
+#define DEFAULT_VALUE -1
 
 //#undefine DEBUG_ON
 #define DEBUG_ON 
