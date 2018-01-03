@@ -14,6 +14,8 @@
 #define DEBUG_ON 
 #define DEVICE_NAME "tzm"
 #define CLASS_NAME "tzm-class-name"
+#define EXIT_FAILURE -1
+#define EXIT_SUCCESS 0
 
 #undef PDEBUG
 
