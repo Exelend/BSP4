@@ -21,6 +21,7 @@
 !**/*.pdf
 !**/*.vpp
 !**/*.png
+!**/*.sh
 !make
 
 # Reallow files from subdirectories
