@@ -6,6 +6,7 @@
 
 #include <linux/module.h>
 #include <linux/init.h>
+#include <err.h>
 #include <linux/moduleparam.h>  // Modulparameter
 #include <linux/kernel.h>	    // printk()
 #include <linux/slab.h>		    // kmalloc()
@@ -26,6 +27,9 @@ static int64_t timediff_in_ms = (int64_t) ret_val_time;
 static int open_devices = 0;
 
 pthread_mutex_t mutex;
+
+static struct class*  devClass  = NULL; // The device-driver class struct pointer
+static struct device* deviceDriver = NULL; ///< The device-driver device struct pointer
 
 /*
  * module parameter
@@ -55,15 +59,41 @@ int tzm_inital( void ){
         printk(KERN_ALERT "Failed to register a major number\n");
         return majorNumber;
     }
-    printk(KERN_INFO "tzm Module loaded.\n");
+    PDEBUG("Register Major number -> OK\n"); // Evtl. Fehler: Keine Parameter übergeben.
+    
+    // Divice-Klasse erstellen (registrieren)
+    devClass = class_create(THIS_MODULE, CLASS_NAME);
+    if (IS_ERR(devClass)){                // Prüfen,ob class i.O., wenn nicht -> aufräumen 
+        unregister_chrdev(majorNumber, DEVICE_NAME);
+        printk(KERN_ALERT "Failed to register device class\n");
+        return PTR_ERR(devClass);          // Returnwert als errno zurückgeben.
+    }
+    PDEBUG("class_create -> OK");
+    
+    // Device-treiber erstellen (registrieren)
+    deviceDriver = device_create(devClass, NULL, MKDEV(majorNumber, 0), NULL, DEVICE_NAME);
+    if (IS_ERR(deviceDriver)){               // Clean up if there is an error
+        class_destroy(devClass);           // Repeated code but the alternative is goto statements
+        unregister_chrdev(majorNumber, DEVICE_NAME);
+        printk(KERN_ALERT "Failed to create the device (device_create)\n");
+        return PTR_ERR(deviceDriver);
+    }
+    PGEBUG("device-Driver created correctly\n");
+    
+    
     last_newLine = get_jiffies_64();
-    PDEBUG("tzm_inital -> OK"); // Evtl. Fehler: Keine Parameter übergeben.
+    PDEBUG("tzm_inital -> OK\n"); // Evtl. Fehler: Keine Parameter übergeben.
+    printk(KERN_INFO "tzm Module loaded.\n");
     return EXIT_SUCCESS;
 }
 
 void tzm_exit( void ){
     pthread_mutex_unlock (&mutex);
     pthread_mutex_destroy(&mutex);
+    device_destroy(devClass, MKDEV(majorNumber, 0));
+    class_unregister(devClass);
+    class_destroy(devClass);
+    unregister_chrdev(majorNumber, DEVICE_NAME);
     printk(KERN_INFO "tzm Module unloaded.\n");
 }
 
