@@ -4,6 +4,9 @@
  *
  */
 
+/*
+ * includes
+ */
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/device.h>
@@ -20,13 +23,15 @@
 
 #include "tzm.h"
 
+/*
+ * Variablen Dekleration und Initialisierung
+ */
 static int majorNumber = -1;
 static int ret_val_time = -1;
 static int ret_val_number = -1;
-static u64 last_newLine = 0;
-static u64 last_duration = 0;
 static int counter = -1;
-static int timediff_in_ms = -1;//(int64_t) ret_val_time;
+static unsigned int last_newLine = 0;
+static unsigned int timediff_in_ms = -1;
 static int open_devices = 0;
 
 struct mutex my_mutex;
@@ -37,14 +42,14 @@ static struct device* deviceDriver = NULL; ///< The device-driver device struct 
 /*
  * Modul Beschreibung
  */
-MODULE_LICENSE("GPL");              ///< The license type -- this affects runtime behavior
-MODULE_AUTHOR("Martin Witte, Hauke Goldhammer");      ///< The author -- visible when you use modinfo
-MODULE_DESCRIPTION("A simple Linux driver for stuff.");  ///< The description -- see modinfo
-MODULE_VERSION("0.1");              ///< The version of the module
+MODULE_LICENSE("GPL");                                  // The license type -- this affects runtime behavior
+MODULE_AUTHOR("Martin Witte, Hauke Goldhammer");        // The author -- visible when you use modinfo
+MODULE_DESCRIPTION("A simple Linux driver for stuff."); // The description -- see modinfo
+MODULE_VERSION("1.0");                                  // The version of the module
 
 
 /*
- * module parameter
+ * Modulparameter
  */ 
 // Default time
 module_param(ret_val_time, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
@@ -89,7 +94,7 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
     mutex_lock (&my_mutex);
     // Speicher allocieren
     str = (char*) vmalloc(bufSize);
-    if(str == 0){
+    if(str == 0){                                             // Prüfen, ob allocieren erfolgreich war
         printk(KERN_ALERT "tzm_write: vmalloc -> FAIL!\n");
         return EXIT_FAILURE;
     }
@@ -103,9 +108,16 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
     for(i = 0 ; i < bufSize; i++){
         counter++;
         if(buf[i] == '\n'){
-            last_duration = get_jiffies_64() - last_newLine;
-            timediff_in_ms = (int) ( jiffies_to_msecs(last_duration) );
-            printk(KERN_INFO "Time: %d\nSigns: %d\n", timediff_in_ms, counter);
+            unsigned int curTime;
+            curTime = jiffies_to_msecs(get_jiffies_64());
+            // Prüfen ob erste Eingabe
+            if(last_newLine == ret_val_time){
+                timediff_in_ms = ret_val_time;
+            } else {
+                timediff_in_ms = curTime - last_newLine;
+            }
+            printk(KERN_INFO "Time: %d\nSigns: %d\n", (int)timediff_in_ms, counter);
+            last_newLine = curTime;
             mutex_unlock (&my_mutex);
             vfree(str);
             return counter;
@@ -120,7 +132,7 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
 ssize_t tzm_read(struct file* filp, char __user* buf, size_t count, loff_t* f_pos ){
     char string[(int)count];
     PDEBUG("tzm_read -> Start");
-    sprintf(string, "Time: %d\nSigns: %d\n\0", timediff_in_ms, counter);
+    sprintf(string, "Time: %d\nSigns: %d\n\0", (int)timediff_in_ms, counter);
     mutex_lock (&my_mutex);
     printk(KERN_INFO "%s", string);
     // Daten an 'User-Space' uebergeben
@@ -159,7 +171,7 @@ int tzm_release(struct inode* struc_node, struct file* file){
 static int __init tzm_initial( void ){
     PDEBUG("tzm_initial -> Start");
     counter = ret_val_number;
-    timediff_in_ms = (int) ret_val_time;
+    last_newLine = ret_val_time;
     
     // Dynamische major number vom Kernel holen.
     majorNumber = register_chrdev(0, DEVICE_NAME, &fops);
@@ -186,10 +198,7 @@ static int __init tzm_initial( void ){
         printk(KERN_ALERT "Failed to create the device (device_create)\n");
         return PTR_ERR(deviceDriver);
     }
-    PDEBUG("device-Driver created correctly\n");
     
-    
-    last_newLine = get_jiffies_64();
     PDEBUG("tzm_inital -> OK\n"); // Evtl. Fehler: Keine Parameter übergeben.
     printk(KERN_INFO "tzm Module loaded.\n");
     return EXIT_SUCCESS;
