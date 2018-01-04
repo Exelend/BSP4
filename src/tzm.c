@@ -83,6 +83,7 @@ static void __exit tzm_exit( void ){
 }
 
 ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, loff_t *f_pos){
+    PDEBUG("tzm_write -> Start");
     char* str;
     int i;
     mutex_lock (&my_mutex);
@@ -112,13 +113,16 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
     }
     mutex_unlock (&my_mutex);
     vfree(str);
+    PDEBUG("tzm_write ->OK");
     return -1;
 }
 
 ssize_t tzm_read(struct file* filp, char __user* buf, size_t count, loff_t* f_pos ){
+    PDEBUG("tzm_read -> Start");
     mutex_lock (&my_mutex);
-    printk(KERN_INFO "Time: %d\nSigns: %d\n", timediff_in_ms, counter); // Evtl Fehlerquelle!!!!!!! (Formatierung)
+    printk(KERN_INFO "Time: %d\nSigns: %d\n", timediff_in_ms, counter);
     mutex_unlock (&my_mutex);
+    PDEBUG("tzm_read -> OK");
     return counter;
 }    
 
@@ -126,23 +130,27 @@ ssize_t tzm_read(struct file* filp, char __user* buf, size_t count, loff_t* f_po
  * Zur überwachung der 'Geräteanzahl' (MAX 1 Gerät!)
  */ 
 int tzm_open(struct inode* struc_node, struct file* file){
+    PDEBUG("tzm_open -> Start");
     if(open_devices != 0){
         return EBUSY;
     }
     mutex_init(&my_mutex);
     open_devices++;
-    PDEBUG("tzm_open -> OK"); // Evtl. Fehler: Keine Parameter übergeben.
+    PDEBUG("tzm_open -> OK");
     return EXIT_SUCCESS;
 }   
 
 int tzm_release(struct inode* struc_node, struct file* file){
+    PDEBUG("tzm_release -> Start");
     mutex_unlock (&my_mutex);
     mutex_destroy(&my_mutex);
     open_devices--;
+    PDEBUG("tzm_release -> OK");
     return EXIT_SUCCESS;
 }
 
 static int __init tzm_initial( void ){
+    PDEBUG("tzm_initial -> Start");
     counter = ret_val_number;
     timediff_in_ms = (int) ret_val_time;
     
