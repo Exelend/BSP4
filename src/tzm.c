@@ -105,7 +105,7 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
         if(buf[i] == '\n'){
             last_duration = get_jiffies_64() - last_newLine;
             timediff_in_ms = (int) (((int64_t)last_duration)/HZ);
-            printk(KERN_INFO "Time: %d\nSigns: %d\n", timediff_in_ms, counter); // Evtl Fehlerquelle!!!!!!! (Formatierung)
+            printk(KERN_INFO "Time: %d\nSigns: %d\n", timediff_in_ms, counter);
             mutex_unlock (&my_mutex);
             vfree(str);
             return counter;
@@ -113,7 +113,7 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
     }
     mutex_unlock (&my_mutex);
     vfree(str);
-    PDEBUG("tzm_write ->OK");
+    PDEBUG("tzm_write ->OK\n");
     return -1;
 }
 
@@ -143,7 +143,7 @@ int tzm_open(struct inode* struc_node, struct file* file){
     }
     mutex_init(&my_mutex);
     open_devices++;
-    PDEBUG("tzm_open -> OK");
+    PDEBUG("tzm_open -> OK\n");
     return EXIT_SUCCESS;
 }   
 
@@ -152,7 +152,7 @@ int tzm_release(struct inode* struc_node, struct file* file){
     mutex_unlock (&my_mutex);
     mutex_destroy(&my_mutex);
     open_devices--;
-    PDEBUG("tzm_release -> OK");
+    PDEBUG("tzm_release -> OK\n");
     return EXIT_SUCCESS;
 }
 
@@ -176,7 +176,7 @@ static int __init tzm_initial( void ){
         printk(KERN_ALERT "Failed to register device class\n");
         return PTR_ERR(devClass);          // Returnwert als errno zurückgeben.
     }
-    PDEBUG("class_create -> OK");
+    PDEBUG("class_create -> OK\n");
     
     // Device-treiber erstellen (registrieren)
     deviceDriver = device_create(devClass, NULL, MKDEV(majorNumber, 0), NULL, DEVICE_NAME);
