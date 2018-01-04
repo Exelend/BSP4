@@ -83,9 +83,9 @@ static void __exit tzm_exit( void ){
 }
 
 ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, loff_t *f_pos){
-    PDEBUG("tzm_write -> Start");
     char* str;
     int i;
+    PDEBUG("tzm_write -> Start");
     mutex_lock (&my_mutex);
     // Speicher allocieren
     str = (char*) vmalloc(bufSize);
@@ -118,9 +118,16 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
 }
 
 ssize_t tzm_read(struct file* filp, char __user* buf, size_t count, loff_t* f_pos ){
+    char string[(int)count];
     PDEBUG("tzm_read -> Start");
+    sprintf(string, "Time: %d\nSigns: %d\n\0", timediff_in_ms, counter);
     mutex_lock (&my_mutex);
-    printk(KERN_INFO "Time: %d\nSigns: %d\n", timediff_in_ms, counter);
+    printk(KERN_INFO "%s", string);
+    // Daten an 'User-Space' uebergeben
+    if(copy_to_user(buf, string, count) != 0){              // wenn nicht richtig kopiert wurde:
+        printk(KERN_ALERT "tzm_read: copy_to_user -> FAIL!\n");
+        return EXIT_FAILURE;
+    }    
     mutex_unlock (&my_mutex);
     PDEBUG("tzm_read -> OK");
     return counter;
