@@ -129,7 +129,7 @@ ssize_t tzm_read(struct file* filp, char __user* buf, size_t count, loff_t* f_po
         return EXIT_FAILURE;
     }    
     mutex_unlock (&my_mutex);
-    PDEBUG("tzm_read -> OK");
+    PDEBUG("tzm_read -> OK\n");
     return counter;
 }    
 
