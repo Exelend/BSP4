@@ -104,7 +104,7 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
         counter++;
         if(buf[i] == '\n'){
             last_duration = get_jiffies_64() - last_newLine;
-            timediff_in_ms = (int) (((int64_t)last_duration)/HZ);
+            timediff_in_ms = (int) ( jiffies_to_msecs(last_duration) );
             printk(KERN_INFO "Time: %d\nSigns: %d\n", timediff_in_ms, counter);
             mutex_unlock (&my_mutex);
             vfree(str);
