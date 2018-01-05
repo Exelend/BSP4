@@ -100,6 +100,7 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
     }
     // String kopieren
     if(copy_from_user(str, buf, (long)bufSize) != 0){         // String in "Kernel" kopieren und prüfen ob alles kopiert worden ist.
+	vfree(str);
         printk(KERN_ALERT "tzm_write: copy_from_user -> FAIL!\n");
         return EXIT_FAILURE;
     }
