@@ -172,6 +172,7 @@ static int __init tzm_initial( void ){
     PDEBUG("tzm_initial -> Start");
     counter = ret_val_number;
     last_newLine = ret_val_time;
+    timediff_in_ms = ret_val_time;
     
     // Dynamische major number vom Kernel holen.
     majorNumber = register_chrdev(0, DEVICE_NAME, &fops);
