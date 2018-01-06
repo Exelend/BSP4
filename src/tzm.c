@@ -12,11 +12,11 @@
 #include <linux/device.h>
 #include <linux/vmalloc.h>      // Speicher allocieren
 #include <linux/moduleparam.h>  // Modulparameter
-#include <linux/kernel.h>	    // printk()
-#include <linux/slab.h>		    // kmalloc()
-#include <linux/fs.h>		    // everything...
-#include <linux/errno.h>	    // error codes
-#include <linux/types.h>	    // size_t
+#include <linux/kernel.h>       // printk()
+#include <linux/slab.h>         // kmalloc()
+#include <linux/fs.h>           // everything...
+#include <linux/errno.h>        // error codes
+#include <linux/types.h>        // size_t
 #include <linux/jiffies.h>      // for Timer-Ticks
 #include <linux/mutex.h>        // Mutex, ...
 #include <linux/uaccess.h>      // copy_from_user
@@ -66,7 +66,7 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
 int tzm_release(struct inode* struc_node, struct file* file);
 
 
-/**
+/*
  * callback Funktionen zuweisen
  */
 static struct file_operations fops =
@@ -98,12 +98,14 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
     str = (char*) vmalloc(bufSize);
     if(str == 0){                                             // Prüfen, ob allocieren erfolgreich war
         printk(KERN_ALERT "tzm_write: vmalloc -> FAIL!\n");
+        mutex_unlock (&RW_mutex);
         return EXIT_FAILURE;
     }
     // String kopieren
     if(copy_from_user(str, buf, (long)bufSize) != 0){         // String in "Kernel" kopieren und prüfen ob alles kopiert worden ist.
-	vfree(str);
         printk(KERN_ALERT "tzm_write: copy_from_user -> FAIL!\n");
+        vfree(str);
+        mutex_unlock (&RW_mutex);
         return EXIT_FAILURE;
     }
     // Zeichen zählen und Zeit errechnen
@@ -121,8 +123,8 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
             }
             printk(KERN_INFO "Time: %d\nSigns: %d\n", (int)timediff_in_ms, counter);
             last_newLine = curTime;
-            mutex_unlock (&RW_mutex);
             vfree(str);
+            mutex_unlock (&RW_mutex);
             return counter;
         }    
     }
@@ -198,7 +200,7 @@ static int __init tzm_initial( void ){
         mutex_destroy(&Open_mutex);
         unregister_chrdev(majorNumber, DEVICE_NAME);
         printk(KERN_ALERT "Failed to register device class\n");
-        return PTR_ERR(devClass);          // Returnwert als errno zurückgeben.
+        return PTR_ERR(devClass);
     }
     PDEBUG("class_create -> OK\n");
     

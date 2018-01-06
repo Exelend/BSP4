@@ -41,7 +41,7 @@
 \fancyhead{} % Blank out the default header
 \fancyfoot{} % Blank out the default footer
 
-\fancyhead[C]{Hamburg University of Applied Sciences $\,\bullet\,$ BTI4-RNP/02} % Custom header text
+\fancyhead[C]{Hamburg University of Applied Sciences $\,\bullet\,$ BTI3-BSP/04} % Custom header text
 
 \fancyfoot[RO,LE]{\thepage} % Custom footer text
 
@@ -86,7 +86,7 @@
     %\thanks{A thank you or further information}\\ % Your name
     %\normalsize \href..@gmail.com}{...@.. .com}\\[2mm] % Your email address
 }
-\date{Freitag, 15 Dezember 17} % Uncomment to remove date
+\date{Sonntag, 24 Dezember 17} % Uncomment to remove date
 
 %----------------------------------------------------------------------------------------
 \begin{document}
@@ -98,27 +98,56 @@
 - Device-Node: /dev/tzm/\\
 
 
-\section{Weitere Anforderungen und Lösungsansätze:}
+\section{Anforderungen und Lösungsansätze:}
 
-\subsection{Funktionen:}
+\subsection{Funktionalität:}
 - Anzahl der Zeichen in einer Zeile bestimmen (-> \textbackslash n)\\
 - Zeit zwischen zwei Zeilenumbrüchen bestimmen\\
 - Ausgabe der Zeichenanzahl und Zeit
-- 
 
 \subsection{User-Befehle:}
-\begin{tabular}{| l | l |}
-\hline
-write() & \\
-\hline
-read() & \\
-\hline
-\end{tabular}
+write() \\
+read() \\
+open() \\
+close() \\
 
-
-
-
+\subsection{Anforderungen:}
+- Maximal 1 Zugriff ( open ) zu Zeit \\
+- Parallele read()- /write()-Zugriffe per mutex schützen \\
+- 2 Modulparameter [ret\_ val\_ time, ret\_ val\_ number] \\
+- PDEBUG-Macro verwenden \\
+- Major-Number dynamisch beziehen \\
+\\
+- Makefile erstellen \\
+- Skript zum neu laden des Modules erstellen \\
+\newpage
 \section{Angestrebte Programmstruktur:}
-%\includegraphics[width=0.9\textwidth]{Entwurf v1-0.png}
+\begin{itemize}
+\item Je eine .c- und .h-Datei
+\item mutexe:
+\begin{itemize}
+\item RW\_ mutex (read-/write-Schutz)
+\item Open\_ mutex (nur ein Zugriff zur Zeit)
+\end{itemize}
+\item Funktionen:
+\begin{itemize}
+\item init
+\item exit
+\item callback-Funktionen:
+\begin{itemize}
+\item open:
+\begin{itemize}
+\item Open\_ mutex locken
+\end{itemize}
+\item release (wird von close() aufgerufen):
+\begin{itemize}
+\item alle Mutexe unlocken und zurueckgeben
+\item device- und class-destroy
+\end{itemize}
+\item read
+\item write
+\end{itemize}
+\end{itemize}
+\end{itemize}
 
 \end{document}
