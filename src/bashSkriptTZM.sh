@@ -1,7 +1,8 @@
+#!/bin/bash
+
 # Bash-skript zu BSP4 tzm
 # Hauke Goldhammer, Martin Witte
 
-#!/bin/bash
 
 rm /dev/tzm                                    # Device-Node löschen
 rmmod -v tzm.ko                                # Modul aus Kernel Entfernen

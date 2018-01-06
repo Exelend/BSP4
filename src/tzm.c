@@ -32,12 +32,12 @@ static int ret_val_number = -1;
 static int counter = -1;
 static unsigned int last_newLine = 0;
 static unsigned int timediff_in_ms = -1;
-static int open_devices = 0;
 
-struct mutex my_mutex;
+struct mutex RW_mutex;
+struct mutex Open_mutex;
 
 static struct class*  devClass  = NULL; // The device-driver class struct pointer
-static struct device* deviceDriver = NULL; ///< The device-driver device struct pointer
+static struct device* deviceDriver = NULL; // The device-driver device struct pointer
 
 /*
  * Modul Beschreibung
@@ -78,8 +78,10 @@ static struct file_operations fops =
 };
 
 static void __exit tzm_exit( void ){
-    mutex_unlock (&my_mutex);
-    mutex_destroy(&my_mutex);
+    mutex_unlock (&RW_mutex);
+    mutex_destroy(&RW_mutex);
+    mutex_unlock (&Open_mutex);
+    mutex_destroy(&Open_mutex);
     device_destroy(devClass, MKDEV(majorNumber, 0));
     class_unregister(devClass);
     class_destroy(devClass);
@@ -91,7 +93,7 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
     char* str;
     int i;
     PDEBUG("tzm_write -> Start");
-    mutex_lock (&my_mutex);
+    mutex_lock (&RW_mutex);
     // Speicher allocieren
     str = (char*) vmalloc(bufSize);
     if(str == 0){                                             // Prüfen, ob allocieren erfolgreich war
@@ -119,12 +121,12 @@ ssize_t tzm_write(struct file *filp, const char __user* buf, size_t bufSize, lof
             }
             printk(KERN_INFO "Time: %d\nSigns: %d\n", (int)timediff_in_ms, counter);
             last_newLine = curTime;
-            mutex_unlock (&my_mutex);
+            mutex_unlock (&RW_mutex);
             vfree(str);
             return counter;
         }    
     }
-    mutex_unlock (&my_mutex);
+    mutex_unlock (&RW_mutex);
     vfree(str);
     PDEBUG("tzm_write ->OK\n");
     return -1;
@@ -134,14 +136,14 @@ ssize_t tzm_read(struct file* filp, char __user* buf, size_t count, loff_t* f_po
     char string[(int)count];
     PDEBUG("tzm_read -> Start");
     sprintf(string, "Time: %d\nSigns: %d\n\0", (int)timediff_in_ms, counter);
-    mutex_lock (&my_mutex);
+    mutex_lock (&RW_mutex);
     printk(KERN_INFO "%s", string);
     // Daten an 'User-Space' uebergeben
     if(copy_to_user(buf, string, count) != 0){              // wenn nicht richtig kopiert wurde:
         printk(KERN_ALERT "tzm_read: copy_to_user -> FAIL!\n");
         return EXIT_FAILURE;
     }    
-    mutex_unlock (&my_mutex);
+    mutex_unlock (&RW_mutex);
     PDEBUG("tzm_read -> OK\n");
     return counter;
 }    
@@ -151,26 +153,26 @@ ssize_t tzm_read(struct file* filp, char __user* buf, size_t count, loff_t* f_po
  */ 
 int tzm_open(struct inode* struc_node, struct file* file){
     PDEBUG("tzm_open -> Start");
-    if(open_devices != 0){
-        return EBUSY;
+    if(mutex_trylock(&Open_mutex) == 0){
+        PDEBUG("tzm_open -> Fail! Busy, 1 Device is running\n");
+        return -EBUSY;
     }
-    mutex_init(&my_mutex);
-    open_devices++;
     PDEBUG("tzm_open -> OK\n");
     return EXIT_SUCCESS;
 }   
 
 int tzm_release(struct inode* struc_node, struct file* file){
     PDEBUG("tzm_release -> Start");
-    mutex_unlock (&my_mutex);
-    mutex_destroy(&my_mutex);
-    open_devices--;
+    mutex_unlock(&RW_mutex);
+    mutex_unlock(&Open_mutex);
     PDEBUG("tzm_release -> OK\n");
     return EXIT_SUCCESS;
 }
 
 static int __init tzm_initial( void ){
     PDEBUG("tzm_initial -> Start");
+    mutex_init(&Open_mutex);
+    mutex_init(&RW_mutex);
     counter = ret_val_number;
     last_newLine = ret_val_time;
     timediff_in_ms = ret_val_time;
@@ -178,6 +180,10 @@ static int __init tzm_initial( void ){
     // Dynamische major number vom Kernel holen.
     majorNumber = register_chrdev(0, DEVICE_NAME, &fops);
     if (majorNumber<0){
+        mutex_unlock (&RW_mutex);
+        mutex_destroy(&RW_mutex);
+        mutex_unlock (&Open_mutex);
+        mutex_destroy(&Open_mutex);
         printk(KERN_ALERT "Failed to register a major number\n");
         return majorNumber;
     }
@@ -186,6 +192,10 @@ static int __init tzm_initial( void ){
     // Divice-Klasse erstellen (registrieren)
     devClass = class_create(THIS_MODULE, CLASS_NAME);
     if (IS_ERR(devClass)){                // Prüfen,ob class i.O., wenn nicht -> aufräumen 
+        mutex_unlock (&RW_mutex);
+        mutex_destroy(&RW_mutex);
+        mutex_unlock (&Open_mutex);
+        mutex_destroy(&Open_mutex);
         unregister_chrdev(majorNumber, DEVICE_NAME);
         printk(KERN_ALERT "Failed to register device class\n");
         return PTR_ERR(devClass);          // Returnwert als errno zurückgeben.
@@ -195,6 +205,10 @@ static int __init tzm_initial( void ){
     // Device-treiber erstellen (registrieren)
     deviceDriver = device_create(devClass, NULL, MKDEV(majorNumber, 0), NULL, DEVICE_NAME);
     if (IS_ERR(deviceDriver)){               // Clean up if there is an error
+        mutex_unlock (&RW_mutex);
+        mutex_destroy(&RW_mutex);
+        mutex_unlock (&Open_mutex);
+        mutex_destroy(&Open_mutex);
         class_destroy(devClass);           // Repeated code but the alternative is goto statements
         unregister_chrdev(majorNumber, DEVICE_NAME);
         printk(KERN_ALERT "Failed to create the device (device_create)\n");

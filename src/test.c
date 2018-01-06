@@ -1,7 +1,8 @@
 /*
- * Test program for tzm
+ * Test program for tzm, angepasst.
+ * Martin Witte
  * 
- * Tim Tiedemann, Franz Korf
+ * Auf grundlage des gleichnamigen Programmes von Tim Tiedemann, Franz Korf
  */
 
 #include <stdio.h>
@@ -22,6 +23,7 @@ void help() {
     printf("TZM Linux-Kernel-Driver Test\n");
     printf("Options:\n  -r : Receiver Mode\n");
     printf("  -t : Transmitter Mode\n");
+    printf("  -d : Double open Mode\n");
     printf("\n");
 }
 
@@ -41,6 +43,7 @@ int main(int argc, char* argv[]) {
 
     if (strcmp(argv[1], "-r")==0) mode=1;
     if (strcmp(argv[1], "-t")==0) mode=2;
+    if (strcmp(argv[1], "-d")==0) mode=3;
 
     if (mode==0) {
       help();
@@ -100,6 +103,21 @@ int main(int argc, char* argv[]) {
             return -6 ;
           }
           printf("successfully closed\n");
+          
+          break;
+       case 3:
+          fd = open (TZM , O_RDONLY);
+            if (fd == -1) {
+                perror ("open");
+                return -2 ;
+            }
+          printf("First device successfully opened!\n"); 
+          fd = open (TZM , O_RDONLY);
+            if (errno != EBUSY) {
+                printf("Double open Test failed! Value: %d\n", fd);
+                return -2 ;
+            }
+          printf("Double open Test successfully!\n"); 
           
           break;
     }
