@@ -7,9 +7,9 @@ PWD := "$$(pwd)"
 CFLAGS_$(obj-m) := -DDEBUG -g3
 
 all:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	make -C $(KDIR) M=$(PWD) modules
 clean:
-	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	make -C $(KDIR) M=$(PWD) clean
 
 insmod:
 	insmod tzm.ko
